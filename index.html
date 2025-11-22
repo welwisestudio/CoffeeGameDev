@@ -44,7 +44,6 @@
 
       /* ================ MOBILE LAYOUT ================ */
 
-      /* Мобильный режим: убираем flex-центр и даём фуллскрин */
       #unity-container.unity-mobile {
         display: block;
         width: 100%;
@@ -71,43 +70,26 @@
         justify-content: center;
         align-items: center;
 
+        /* СЮДА ЛОЖИШЬ СВОЙ АРТ 9:16 */
         background: url("TemplateData/loading_bg.png") center center no-repeat;
         background-size: cover;
 
         z-index: 9999;
       }
 
-      /* Custom game logo */
+      /* Лого нам не нужно — оно уже на самом артe */
       #unity-logo {
-        width: 180px;
-        height: 180px;
-        margin-bottom: 25px;
-        background: url("TemplateData/coffee_logo.png") center center no-repeat;
-        background-size: contain;
-
-        animation: logo-spin 2.8s linear infinite;
+        display: none;
       }
 
-      @keyframes logo-spin {
-        from { transform: rotate(0deg); }
-        to   { transform: rotate(360deg); }
-      }
-
-      /* Progress bar (Unity default improved) */
+      /* Прячем прогресс-бар, чтобы не портил картинку */
       #unity-progress-bar-empty {
-        width: 240px;
-        height: 16px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 10px;
-        overflow: hidden;
+        display: none;
       }
 
       #unity-progress-bar-full {
         width: 0%;
         height: 100%;
-        background: #00d1ff;
-        border-radius: 10px;
-        transition: width 0.15s linear;
       }
     </style>
 
@@ -213,7 +195,8 @@
 
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
-          document.querySelector("#unity-progress-bar-full").style.width = (progress * 100) + "%";
+          // прогресс считаем, но визуально не показываем — фон статичный
+          // document.querySelector("#unity-progress-bar-full").style.width = (progress * 100) + "%";
         })
         .then(() => {
           document.querySelector("#unity-loading-bar").style.display = "none";
