@@ -8,9 +8,19 @@
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
     <style>
+      /* ================ FONT ================ */
+      /* Шрифт FOO лежит в TemplateData/foo.otf */
+      @font-face {
+        font-family: "FOO";
+        src: url("TemplateData/foo.otf") format("truetype");
+        font-weight: 400 900;
+        font-style: normal;
+      }
+
       /* ================ BASE UNITY STYLES ================ */
 
-      html, body {
+      html,
+      body {
         margin: 0;
         padding: 0;
         overflow: hidden;
@@ -83,86 +93,99 @@
 
       #loading-title {
         position: absolute;
-        top: 35px;
+        top: 40px;
         width: 100%;
         text-align: center;
 
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        font-size: 42px;
+        font-family: "FOO", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 101px;          /* БОЛЬШЕ заголовок */
         font-weight: 900;
-        letter-spacing: 3px;
+        letter-spacing: 0px;
         text-transform: uppercase;
         color: #ffffff;
 
-        -webkit-text-stroke: 3px #2f5fb1;
+        -webkit-text-stroke: 4px #2e6ad0;
         text-shadow:
-          0 3px 0 #2f5fb1,
-          0 0 12px rgba(0, 0, 0, 0.65);
+          0 3px 0 #2e6ad0,
+          0 0 18px rgba(0, 0, 0, 0.9);
+
+        z-index: 10000;
+        pointer-events: none;
       }
 
-      /* ================ ЗАГРУЗОЧНАЯ КНОПКА ================ */
+      /* ================ ЗАГРУЗОЧНАЯ КНОПКА (СЛАЙДЕР) ================ */
 
       #loading-button {
         margin-bottom: 0;
       }
 
+      /* Внешняя рамка */
       #loading-button-inner {
         position: relative;
-        padding: 6px;
+        padding: 10px 12px;
         border-radius: 999px;
-        background: linear-gradient(180deg, #ffd36b, #ff9b2e);
+        background: linear-gradient(180deg, #dc7601, #8e3600);
         box-shadow:
-          0 6px 0 #c96516,
-          0 0 14px rgba(0, 0, 0, 0.55);
+          0 6px 0 #c76619,
+          0 0 16px rgba(0, 0, 0, 0.6);
       }
 
+      /* Голубая внутренняя капсула */
       #loading-button-bg {
         position: relative;
         border-radius: 999px;
         overflow: hidden;
-        background: linear-gradient(180deg, #34d7ff, #0089ff);
-        padding: 12px 48px;
-        min-width: 260px;
+        background: linear-gradient(180deg, #46e0ff, #0091ff);
+        padding: 18px 64px;      /* толще и выше, как в примере */
+        min-width: 320px;        /* шире кнопка */
         text-align: center;
+        box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.35);
       }
 
+      /* Светлая подсветка прогресса */
       #loading-progress-fill {
         position: absolute;
         left: 0;
         top: 0;
         height: 100%;
         width: 0;
-        background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0));
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.95),
+          rgba(255, 255, 255, 0)
+        );
         opacity: 0.7;
         mix-blend-mode: screen;
         pointer-events: none;
       }
 
+      /* Текст ЗАГРУЗКА… — КРУПНЕЕ */
       #unity-loading-text {
         position: relative;
         z-index: 2;
         color: #ffffff;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        font-size: 22px;
+        font-family: "FOO", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 50px;         /* был меньше, теперь ближе к рефу */
         font-weight: 900;
-        letter-spacing: 2px;
+        letter-spacing: 4px;
         text-transform: uppercase;
 
-        -webkit-text-stroke: 2px #2f5fb1;
+        -webkit-text-stroke: 2px #2e6ad0;
         text-shadow:
-          0 2px 0 #2f5fb1,
-          0 0 8px rgba(0, 0, 0, 0.7);
+          0 2px 0 #2e6ad0,
+          0 0 10px rgba(0, 0, 0, 0.7);
       }
     </style>
-
   </head>
 
   <body>
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
 
-      <!-- === ВЕРХНИЙ ЗАГОЛОВОК (МЕНЯЕШЬ ТЕКСТ ЗДЕСЬ) === -->
-      <div id="loading-title">COFFEE QUEST</div>
+      <!-- === ВЕРХНИЙ ЗАГОЛОВОК (ТЕКСТ ПОМЕНЯЕШЬ ЗДЕСЬ) === -->
+      <div id="loading-title">FARMERS <br>COFFEE<br></div>
 
       <div id="unity-loading-bar">
         <div id="loading-button">
@@ -183,35 +206,38 @@
       var unityContainer = document.querySelector("#unity-container");
 
       function resizeDesktopCanvas() {
-        var targetRatio = 9 / 16;
-        var windowWidth = window.innerWidth;
-        var windowHeight = window.innerHeight;
+        const targetRatio = 9 / 16;
+        const ww = window.innerWidth;
+        const wh = window.innerHeight;
 
-        var newHeight = windowHeight;
-        var newWidth = windowHeight * targetRatio;
+        let h = wh;
+        let w = wh * targetRatio;
 
-        if (newWidth > windowWidth) {
-          newWidth = windowWidth;
-          newHeight = windowWidth / targetRatio;
+        if (w > ww) {
+          w = ww;
+          h = ww / targetRatio;
         }
 
-        canvas.style.width = newWidth + "px";
-        canvas.style.height = newHeight + "px";
+        canvas.style.width = w + "px";
+        canvas.style.height = h + "px";
       }
 
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? "block" : "none";
+          warningBanner.style.display = warningBanner.children.length
+            ? "block"
+            : "none";
         }
         var div = document.createElement("div");
         div.innerHTML = msg;
         warningBanner.appendChild(div);
 
-        if (type == "error") {
+        if (type === "error") {
           div.style = "background: red; padding: 10px;";
         } else {
-          if (type == "warning") div.style = "background: yellow; padding: 10px;";
+          if (type === "warning")
+            div.style = "background: yellow; padding: 10px;";
           setTimeout(() => {
             if (warningBanner.contains(div)) warningBanner.removeChild(div);
             updateBannerVisibility();
@@ -232,14 +258,15 @@
         companyName: "DefaultCompany",
         productName: "CoffeeGame",
         productVersion: "1.0",
-        showBanner: unityShowBanner
+        showBanner: unityShowBanner,
       };
 
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         var meta = document.createElement("meta");
         meta.name = "viewport";
-        meta.content = "width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes";
-        document.getElementsByTagName("head")[0].appendChild(meta);
+        meta.content =
+          "width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes";
+        document.head.appendChild(meta);
 
         unityContainer.className = "unity-mobile";
         canvas.className = "unity-mobile";
@@ -247,7 +274,6 @@
         if (window.Telegram) {
           canvas.style.transform = "translateY(-1px)";
         }
-
       } else {
         resizeDesktopCanvas();
         window.addEventListener("resize", resizeDesktopCanvas);
@@ -258,17 +284,17 @@
 
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
-          document.getElementById("loading-progress-fill").style.width = (progress * 100) + "%";
+          document.getElementById("loading-progress-fill").style.width =
+            progress * 100 + "%";
         })
-        .then(() => {
-          document.getElementById("unity-loading-bar").style.display = "none";
-          document.getElementById("loading-title").style.display = "none";
-        })
-        .catch((message) => alert(message));
+          .then(() => {
+            document.getElementById("unity-loading-bar").style.display = "none";
+            document.getElementById("loading-title").style.display = "none";
+          })
+          .catch((message) => alert(message));
       };
 
       document.body.appendChild(script);
     </script>
-
   </body>
 </html>
