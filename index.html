@@ -22,7 +22,7 @@
       #unity-container {
         width: 100%;
         height: 100vh;
-        position: relative; /* нужно для overlay */
+        position: relative;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -67,29 +67,91 @@
 
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-end;
         align-items: center;
 
-        /* СЮДА ЛОЖИШЬ СВОЙ АРТ 9:16 */
         background: url("TemplateData/loading_bg.png") center center no-repeat;
         background-size: cover;
+
+        padding-bottom: 40px;
+        box-sizing: border-box;
 
         z-index: 9999;
       }
 
-      /* Лого нам не нужно — оно уже на самом артe */
-      #unity-logo {
-        display: none;
+      /* ============ ЗАГОЛОВОК КОФЕЙНИ СВЕРХУ ============ */
+
+      #loading-title {
+        position: absolute;
+        top: 35px;
+        width: 100%;
+        text-align: center;
+
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 42px;
+        font-weight: 900;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #ffffff;
+
+        -webkit-text-stroke: 3px #2f5fb1;
+        text-shadow:
+          0 3px 0 #2f5fb1,
+          0 0 12px rgba(0, 0, 0, 0.65);
       }
 
-      /* Прячем прогресс-бар, чтобы не портил картинку */
-      #unity-progress-bar-empty {
-        display: none;
+      /* ================ ЗАГРУЗОЧНАЯ КНОПКА ================ */
+
+      #loading-button {
+        margin-bottom: 0;
       }
 
-      #unity-progress-bar-full {
-        width: 0%;
+      #loading-button-inner {
+        position: relative;
+        padding: 6px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #ffd36b, #ff9b2e);
+        box-shadow:
+          0 6px 0 #c96516,
+          0 0 14px rgba(0, 0, 0, 0.55);
+      }
+
+      #loading-button-bg {
+        position: relative;
+        border-radius: 999px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #34d7ff, #0089ff);
+        padding: 12px 48px;
+        min-width: 260px;
+        text-align: center;
+      }
+
+      #loading-progress-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
         height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0));
+        opacity: 0.7;
+        mix-blend-mode: screen;
+        pointer-events: none;
+      }
+
+      #unity-loading-text {
+        position: relative;
+        z-index: 2;
+        color: #ffffff;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+
+        -webkit-text-stroke: 2px #2f5fb1;
+        text-shadow:
+          0 2px 0 #2f5fb1,
+          0 0 8px rgba(0, 0, 0, 0.7);
       }
     </style>
 
@@ -99,10 +161,17 @@
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
 
+      <!-- === ВЕРХНИЙ ЗАГОЛОВОК (МЕНЯЕШЬ ТЕКСТ ЗДЕСЬ) === -->
+      <div id="loading-title">COFFEE QUEST</div>
+
       <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+        <div id="loading-button">
+          <div id="loading-button-inner">
+            <div id="loading-button-bg">
+              <div id="loading-progress-fill"></div>
+              <div id="unity-loading-text">ЗАГРУЗКА...</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -113,7 +182,6 @@
       var canvas = document.querySelector("#unity-canvas");
       var unityContainer = document.querySelector("#unity-container");
 
-      /* ================== DESKTOP RESIZE 9:16 ================== */
       function resizeDesktopCanvas() {
         var targetRatio = 9 / 16;
         var windowWidth = window.innerWidth;
@@ -127,12 +195,10 @@
           newHeight = windowWidth / targetRatio;
         }
 
-        // Меняем только CSS размеры, буфер не трогаем — Unity сам подстроится
         canvas.style.width = newWidth + "px";
         canvas.style.height = newHeight + "px";
       }
 
-      /* ================== UNITY BANNER ================== */
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
@@ -154,7 +220,6 @@
         updateBannerVisibility();
       }
 
-      /* ================== UNITY BUILD CONFIG ================== */
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/10.loader.js";
 
@@ -170,7 +235,6 @@
         showBanner: unityShowBanner
       };
 
-      /* ================== DEVICE TYPE ================== */
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         var meta = document.createElement("meta");
         meta.name = "viewport";
@@ -189,17 +253,16 @@
         window.addEventListener("resize", resizeDesktopCanvas);
       }
 
-      /* ================== LOAD UNITY ================== */
       var script = document.createElement("script");
       script.src = loaderUrl;
 
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
-          // прогресс считаем, но визуально не показываем — фон статичный
-          // document.querySelector("#unity-progress-bar-full").style.width = (progress * 100) + "%";
+          document.getElementById("loading-progress-fill").style.width = (progress * 100) + "%";
         })
         .then(() => {
-          document.querySelector("#unity-loading-bar").style.display = "none";
+          document.getElementById("unity-loading-bar").style.display = "none";
+          document.getElementById("loading-title").style.display = "none";
         })
         .catch((message) => alert(message));
       };
