@@ -8,6 +8,11 @@
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
     <style>
+      /* Глобальный коэффициент масштаба UI */
+      :root {
+        --ui-scale: 1;
+      }
+
       /* ================ FONT ================ */
       @font-face {
         font-family: "FOO";
@@ -51,21 +56,7 @@
         font-family: sans-serif;
       }
 
-      /* ================ MOBILE LAYOUT ================ */
-
-      #unity-container.unity-mobile {
-        display: block;
-        width: 100%;
-        height: 100vh;
-      }
-
-      #unity-container.unity-mobile #unity-canvas,
-      #unity-canvas.unity-mobile {
-        width: 100% !important;
-        height: 100% !important;
-      }
-
-      /* ================ CUSTOM LOADING OVERLAY ================ */
+      /* ================= LOADING OVERLAY ================= */
 
       #unity-loading-bar {
         position: absolute;
@@ -73,7 +64,6 @@
         left: 0;
         width: 100%;
         height: 100%;
-
         display: flex;
         justify-content: center;
         align-items: center;
@@ -84,7 +74,7 @@
         z-index: 9999;
       }
 
-      /* Весь UI (заголовок + кнопка) внутри, будем скейлить его целиком */
+      /* Контейнер UI — фиксированное положение, только размеры скейлятся */
       #loading-ui {
         display: flex;
         flex-direction: column;
@@ -95,11 +85,9 @@
         height: 100%;
         padding: 40px 0;
         box-sizing: border-box;
-
-        transform-origin: center center;
       }
 
-      /* ============ ЗАГОЛОВОК КОФЕЙНИ ============ */
+      /* ================= HEADER TITLE ================= */
 
       #loading-title {
         text-align: center;
@@ -108,50 +96,47 @@
 
       #loading-title .title-line {
         display: block;
-        font-family: "FOO", system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", sans-serif;
-        font-size: 101px;
+        font-family: "FOO";
+        font-size: calc(101px * var(--ui-scale)); /* ТОЛЬКО размер, stroke не трогаем */
         font-weight: 900;
         letter-spacing: 0px;
+        color: white;
         text-transform: uppercase;
-        color: #ffffff;
 
+        /* Фикс stroкe — НЕ СКЕЙЛИМ */
         -webkit-text-stroke: 4px #2e6ad0;
+
         text-shadow:
           0 3px 0 #2e6ad0,
           0 0 18px rgba(0, 0, 0, 0.9);
       }
 
-      /* ================ ЗАГРУЗОЧНАЯ КНОПКА (СЛАЙДЕР) ================ */
+      /* ================= BUTTON SLIDER ================= */
 
-      #loading-button {
-        margin-bottom: 0;
-      }
-
-      /* Внешняя рамка */
       #loading-button-inner {
         position: relative;
-        padding: 10px 12px;
+        padding: calc(10px * var(--ui-scale)) calc(12px * var(--ui-scale));
         border-radius: 999px;
+
         background: linear-gradient(180deg, #dc7601, #8e3600);
         box-shadow:
           0 6px 0 #c76619,
           0 0 16px rgba(0, 0, 0, 0.6);
       }
 
-      /* Голубая внутренняя капсула */
       #loading-button-bg {
         position: relative;
         border-radius: 999px;
         overflow: hidden;
         background: linear-gradient(180deg, #46e0ff, #0091ff);
-        padding: 18px 64px;
-        min-width: 320px;
+
+        padding: calc(18px * var(--ui-scale)) calc(64px * var(--ui-scale));
+        min-width: calc(320px * var(--ui-scale));
         text-align: center;
+
         box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.35);
       }
 
-      /* Светлая подсветка прогресса */
       #loading-progress-fill {
         position: absolute;
         left: 0;
@@ -164,23 +149,24 @@
           rgba(255, 255, 255, 0)
         );
         opacity: 0.7;
-        mix-blend-mode: screen;
         pointer-events: none;
+        mix-blend-mode: screen;
       }
 
-      /* Текст ЗАГРУЗКА… */
       #unity-loading-text {
         position: relative;
         z-index: 2;
-        color: #ffffff;
-        font-family: "FOO", system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", sans-serif;
-        font-size: 50px;
+
+        font-family: "FOO";
+        font-size: calc(50px * var(--ui-scale));
         font-weight: 900;
         letter-spacing: 4px;
         text-transform: uppercase;
+        color: white;
 
+        /* Фикс stroke — не масштабируем */
         -webkit-text-stroke: 2px #2e6ad0;
+
         text-shadow:
           0 2px 0 #2e6ad0,
           0 0 10px rgba(0, 0, 0, 0.7);
@@ -189,18 +175,19 @@
   </head>
 
   <body>
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
+    <div id="unity-container">
+      <canvas id="unity-canvas" width="960" height="600"></canvas>
 
       <div id="unity-loading-bar">
         <div id="loading-ui">
-          <!-- === ЗАГОЛОВОК НА ДВУХ СТРОКАХ === -->
+
+          <!-- ============ TITLE ============ -->
           <div id="loading-title">
             <span class="title-line">FARMERS</span>
             <span class="title-line">COFFEE</span>
           </div>
 
-          <!-- === КНОПКА-СЛАЙДЕР ВНИЗУ === -->
+          <!-- ============ BUTTON SLIDER ============ -->
           <div id="loading-button">
             <div id="loading-button-inner">
               <div id="loading-button-bg">
@@ -209,6 +196,7 @@
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
@@ -217,34 +205,31 @@
 
     <script>
       var canvas = document.querySelector("#unity-canvas");
-      var unityContainer = document.querySelector("#unity-container");
-      var loadingUi = document.querySelector("#loading-ui");
 
-      /* Масштабируем UI (заголовок + кнопка) под размер канвы */
+      /* Масштабируем UI через CSS-переменную */
       function updateLoadingUiScale() {
-        if (!canvas || !loadingUi) return;
         var rect = canvas.getBoundingClientRect();
-        var baseHeight = 1280; // высота, под которую ты рисовал арт
+        var baseHeight = 1280;
         var scale = rect.height / baseHeight;
 
-        // Не даём ему разрастаться огромным, только уменьшаем при мелком окне
         if (scale > 1) scale = 1;
-        if (scale < 0.4) scale = 0.4; // нижний предел, чтобы совсем не исчезло
+        if (scale < 0.4) scale = 0.4;
 
-        loadingUi.style.transform = "scale(" + scale + ")";
+        document.documentElement.style.setProperty("--ui-scale", scale);
       }
 
+      /* Скейл канвы 9:16 */
       function resizeDesktopCanvas() {
-        const targetRatio = 9 / 16;
+        const ratio = 9 / 16;
         const ww = window.innerWidth;
         const wh = window.innerHeight;
 
         let h = wh;
-        let w = wh * targetRatio;
+        let w = wh * ratio;
 
         if (w > ww) {
           w = ww;
-          h = ww / targetRatio;
+          h = ww / ratio;
         }
 
         canvas.style.width = w + "px";
@@ -253,71 +238,22 @@
         updateLoadingUiScale();
       }
 
-      function unityShowBanner(msg, type) {
-        var warningBanner = document.querySelector("#unity-warning");
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length
-            ? "block"
-            : "none";
-        }
-        var div = document.createElement("div");
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-
-        if (type === "error") {
-          div.style = "background: red; padding: 10px;";
-        } else {
-          if (type === "warning")
-            div.style = "background: yellow; padding: 10px;";
-          setTimeout(() => {
-            if (warningBanner.contains(div)) warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
-      }
-
+      /* UNITY CONFIG & LOAD */
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/7.loader.js";
+      var loaderUrl = buildUrl + "/10.loader.js";
 
       var config = {
-        arguments: [],
-        dataUrl: buildUrl + "/7.data.unityweb",
-        frameworkUrl: buildUrl + "/7.framework.js.unityweb",
-        codeUrl: buildUrl + "/7.wasm.unityweb",
+        dataUrl: buildUrl + "/10.data.unityweb",
+        frameworkUrl: buildUrl + "/10.framework.js.unityweb",
+        codeUrl: buildUrl + "/10.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "CoffeeGame",
         productVersion: "1.0",
-        showBanner: unityShowBanner,
       };
 
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        var meta = document.createElement("meta");
-        meta.name = "viewport";
-        meta.content =
-          "width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes";
-        document.head.appendChild(meta);
-
-        unityContainer.className = "unity-mobile";
-        canvas.className = "unity-mobile";
-
-        if (window.Telegram) {
-          canvas.style.transform = "translateY(-1px)";
-        }
-
-        // На мобилке тоже скейлим UI
-        window.addEventListener("resize", updateLoadingUiScale);
-        window.addEventListener("orientationchange", updateLoadingUiScale);
-        // небольшой таймаут, пока всё применится
-        setTimeout(updateLoadingUiScale, 100);
-      } else {
-        resizeDesktopCanvas();
-        window.addEventListener("resize", function () {
-          resizeDesktopCanvas();
-          updateLoadingUiScale();
-        });
-      }
+      resizeDesktopCanvas();
+      window.addEventListener("resize", resizeDesktopCanvas);
 
       var script = document.createElement("script");
       script.src = loaderUrl;
@@ -335,7 +271,6 @@
 
       document.body.appendChild(script);
 
-      // На всякий случай ещё один вызов после первого отрисования
       window.addEventListener("load", updateLoadingUiScale);
     </script>
   </body>
