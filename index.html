@@ -8,23 +8,16 @@
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
     <style>
-      /* Глобальный коэффициент масштаба UI */
       :root {
         --ui-scale: 1;
       }
 
-      /* ================ FONT ================ */
       @font-face {
         font-family: "FOO";
         src: url("TemplateData/foo.otf") format("truetype");
-        font-weight: 400 900;
-        font-style: normal;
       }
 
-      /* ================ BASE UNITY STYLES ================ */
-
-      html,
-      body {
+      html, body {
         margin: 0;
         padding: 0;
         overflow: hidden;
@@ -47,81 +40,68 @@
         outline: none;
       }
 
-      #unity-warning {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 20000;
-        color: white;
-        font-family: sans-serif;
-      }
-
       /* ================= LOADING OVERLAY ================= */
 
       #unity-loading-bar {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
+        top: 0; left: 0;
+        width: 100%; height: 100%;
         background: url("TemplateData/loading_bg.png") center center no-repeat;
         background-size: cover;
-
         z-index: 9999;
       }
 
-      /* Контейнер UI — фиксированное положение, только размеры скейлятся */
-      #loading-ui {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
+      /* ===== ГИРЛЯНДА, ЗАГОЛОВОК, КНОПКА — ABSOLUTE ===== */
 
-        width: 100%;
-        height: 100%;
-        padding: 40px 0;
-        box-sizing: border-box;
-      }
+      /* Гирлянда — прижата к самому верху */
+      #loading-garland {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, -40%); /* сдвиг вверх, чтобы убрать пустой хвост PNG */
 
-      /* ================= HEADER TITLE ================= */
+        width: calc(1200px * var(--ui-scale));
+        max-width: 150%;
+        height: auto;
 
-      #loading-title {
-        text-align: center;
+        z-index: 1;
         pointer-events: none;
+        user-select: none;
+        -webkit-user-drag: none;
       }
 
-      #loading-title .title-line {
-        display: block;
-        font-family: "FOO";
-        font-size: calc(101px * var(--ui-scale)); /* ТОЛЬКО размер, stroke не трогаем */
-        font-weight: 900;
-        letter-spacing: 0px;
-        color: white;
-        text-transform: uppercase;
+      /* Заголовок FARMERS COFFEE — ниже, поверх гирлянды */
+      #loading-title-img {
+        position: absolute;
+        top: 27%;
+        left: 50%;
+        transform: translate(-50%, -100%);
 
-        /* Фикс stroкe — НЕ СКЕЙЛИМ */
-        -webkit-text-stroke: 4px #2e6ad0;
+        width: calc(780px * var(--ui-scale));
+        max-width: 92%;
+        height: auto;
 
-        text-shadow:
-          0 3px 0 #2e6ad0,
-          0 0 18px rgba(0, 0, 0, 0.9);
+        z-index: 2;
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-drag: none;
       }
 
-      /* ================= BUTTON SLIDER ================= */
+      /* Кнопка/слайдер ЗАГРУЗКА... — снизу */
+      #loading-button {
+        position: absolute;
+        bottom: 7%;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+      }
 
       #loading-button-inner {
         position: relative;
-        padding: calc(10px * var(--ui-scale)) calc(12px * var(--ui-scale));
+        padding: 10px 12px;
         border-radius: 999px;
-
         background: linear-gradient(180deg, #dc7601, #8e3600);
-        box-shadow:
-          0 6px 0 #c76619,
-          0 0 16px rgba(0, 0, 0, 0.6);
+        box-shadow: 0 6px 0 #c76619, 0 0 16px rgba(0, 0, 0, 0.6);
       }
 
       #loading-button-bg {
@@ -129,47 +109,39 @@
         border-radius: 999px;
         overflow: hidden;
         background: linear-gradient(180deg, #46e0ff, #0091ff);
-
-        padding: calc(18px * var(--ui-scale)) calc(64px * var(--ui-scale));
-        min-width: calc(320px * var(--ui-scale));
+        padding: 18px 64px;
+        min-width: 320px;
         text-align: center;
-
-        box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.35);
+        box-shadow: inset 0 4px 0 rgba(255,255,255,0.35);
       }
 
       #loading-progress-fill {
         position: absolute;
-        left: 0;
-        top: 0;
+        left: 0; top: 0;
         height: 100%;
         width: 0;
         background: linear-gradient(
           90deg,
-          rgba(255, 255, 255, 0.95),
-          rgba(255, 255, 255, 0)
+          rgba(255,255,255,0.95),
+          rgba(255,255,255,0)
         );
         opacity: 0.7;
-        pointer-events: none;
         mix-blend-mode: screen;
+        pointer-events: none;
       }
 
-      #unity-loading-text {
+      /* Картинка с текстом "ЗАГРУЗКА..." внутри кнопки */
+      #loading-text-img {
         position: relative;
         z-index: 2;
-
-        font-family: "FOO";
-        font-size: calc(50px * var(--ui-scale));
-        font-weight: 900;
-        letter-spacing: 4px;
-        text-transform: uppercase;
-        color: white;
-
-        /* Фикс stroke — не масштабируем */
-        -webkit-text-stroke: 2px #2e6ad0;
-
-        text-shadow:
-          0 2px 0 #2e6ad0,
-          0 0 10px rgba(0, 0, 0, 0.7);
+        display: block;
+        width: calc(360px * var(--ui-scale)); /* подгони под свой PNG */
+        max-width: 100%;
+        height: auto;
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-drag: none;
+        margin: 0 auto;
       }
     </style>
   </head>
@@ -179,25 +151,26 @@
       <canvas id="unity-canvas" width="960" height="600"></canvas>
 
       <div id="unity-loading-bar">
-        <div id="loading-ui">
 
-          <!-- ============ TITLE ============ -->
-          <div id="loading-title">
-            <span class="title-line">FARMERS</span>
-            <span class="title-line">COFFEE</span>
-          </div>
+        <!-- ГИРЛЯНДА -->
+        <img id="loading-garland" src="TemplateData/garland_top.png" alt="garland">
 
-          <!-- ============ BUTTON SLIDER ============ -->
-          <div id="loading-button">
-            <div id="loading-button-inner">
-              <div id="loading-button-bg">
-                <div id="loading-progress-fill"></div>
-                <div id="unity-loading-text">ЗАГРУЗКА...</div>
-              </div>
+        <!-- ЗАГОЛОВОК FARMERS COFFEE -->
+        <img id="loading-title-img" src="TemplateData/title_top.png" alt="title">
+
+        <!-- КНОПКА-СЛАЙДЕР -->
+        <div id="loading-button">
+          <div id="loading-button-inner">
+            <div id="loading-button-bg">
+              <div id="loading-progress-fill"></div>
+
+              <!-- КАРТИНКА С ТЕКСТОМ "ЗАГРУЗКА..." -->
+              <img id="loading-text-img" src="TemplateData/loading_text.png" alt="ЗАГРУЗКА...">
+
             </div>
           </div>
-
         </div>
+
       </div>
 
       <div id="unity-warning"></div>
@@ -206,19 +179,17 @@
     <script>
       var canvas = document.querySelector("#unity-canvas");
 
-      /* Масштабируем UI через CSS-переменную */
       function updateLoadingUiScale() {
         var rect = canvas.getBoundingClientRect();
         var baseHeight = 1280;
         var scale = rect.height / baseHeight;
 
         if (scale > 1) scale = 1;
-        if (scale < 0.4) scale = 0.4;
+        if (scale < 0.7) scale = 0.7;
 
         document.documentElement.style.setProperty("--ui-scale", scale);
       }
 
-      /* Скейл канвы 9:16 */
       function resizeDesktopCanvas() {
         const ratio = 9 / 16;
         const ww = window.innerWidth;
@@ -238,7 +209,6 @@
         updateLoadingUiScale();
       }
 
-      /* UNITY CONFIG & LOAD */
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/10.loader.js";
 
@@ -249,7 +219,7 @@
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "CoffeeGame",
-        productVersion: "1.0",
+        productVersion: "1.0"
       };
 
       resizeDesktopCanvas();
@@ -259,14 +229,14 @@
       script.src = loaderUrl;
 
       script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
+        createUnityInstance(canvas, config, progress => {
           document.getElementById("loading-progress-fill").style.width =
-            progress * 100 + "%";
+            (progress * 100) + "%";
         })
-          .then(() => {
-            document.getElementById("unity-loading-bar").style.display = "none";
-          })
-          .catch((message) => alert(message));
+        .then(() => {
+          document.getElementById("unity-loading-bar").style.display = "none";
+        })
+        .catch(msg => alert(msg));
       };
 
       document.body.appendChild(script);
