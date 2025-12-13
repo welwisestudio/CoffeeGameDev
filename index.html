@@ -3,25 +3,43 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>CoffeeGame</title>
 
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+      (function (m, e, t, r, i, k, a) {
+        m[i] =
+          m[i] ||
+          function () {
+            (m[i].a = m[i].a || []).push(arguments);
+          };
+        m[i].l = 1 * new Date();
+        for (var j = 0; j < document.scripts.length; j++) {
+          if (document.scripts[j].src === r) {
+            return;
+          }
+        }
+        k = e.createElement(t),
+          a = e.getElementsByTagName(t)[0],
+          k.async = 1,
+          k.src = r,
+          a.parentNode.insertBefore(k, a);
+      })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js?id=105459235", "ym");
 
-<!-- Yandex.Metrika counter -->
-<script type="text/javascript">
-    (function(m,e,t,r,i,k,a){
-        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-        m[i].l=1*new Date();
-        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=105459235', 'ym');
-
-    ym(105459235, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
-</script>
-<noscript><div><img src="https://mc.yandex.ru/watch/105459235" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-<!-- /Yandex.Metrika counter -->
-
+      ym(105459235, "init", {
+        ssr: true,
+        webvisor: true,
+        clickmap: true,
+        ecommerce: "dataLayer",
+        accurateTrackBounce: true,
+        trackLinks: true,
+      });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/105459235" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
 
     <style>
       :root {
@@ -33,7 +51,8 @@
         src: url("TemplateData/foo.otf") format("truetype");
       }
 
-      html, body {
+      html,
+      body {
         margin: 0;
         padding: 0;
         overflow: hidden;
@@ -45,6 +64,8 @@
       #unity-container {
         width: 100%;
         height: 100vh;
+        /* Better mobile viewport behavior (newer browsers); harmless fallback */
+        height: 100dvh;
         position: relative;
         display: flex;
         justify-content: center;
@@ -54,14 +75,17 @@
       canvas {
         background: #000;
         outline: none;
+        display: block;
       }
 
       /* ================= LOADING OVERLAY ================= */
 
       #unity-loading-bar {
         position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         background: url("TemplateData/loading_bg.png") center center no-repeat;
         background-size: cover;
         z-index: 9999;
@@ -128,19 +152,16 @@
         padding: 18px 64px;
         min-width: 150px;
         text-align: center;
-        box-shadow: inset 0 4px 0 rgba(255,255,255,0.35);
+        box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.35);
       }
 
       #loading-progress-fill {
         position: absolute;
-        left: 0; top: 0;
+        left: 0;
+        top: 0;
         height: 100%;
         width: 0;
-        background: linear-gradient(
-          90deg,
-          rgba(255,255,255,0.95),
-          rgba(255,255,255,0)
-        );
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
         opacity: 0.7;
         mix-blend-mode: screen;
         pointer-events: none;
@@ -164,15 +185,15 @@
 
   <body>
     <div id="unity-container">
+      <!-- оставляю width/height как у тебя, чтобы не ломать Unity init -->
       <canvas id="unity-canvas" width="960" height="600"></canvas>
 
       <div id="unity-loading-bar">
-
         <!-- ГИРЛЯНДА -->
-        <img id="loading-garland" src="TemplateData/garland_top.png" alt="garland">
+        <img id="loading-garland" src="TemplateData/garland_top.png" alt="garland" />
 
         <!-- ЗАГОЛОВОК FARMERS COFFEE -->
-        <img id="loading-title-img" src="TemplateData/title_top.png" alt="title">
+        <img id="loading-title-img" src="TemplateData/title_top.png" alt="title" />
 
         <!-- КНОПКА-СЛАЙДЕР -->
         <div id="loading-button">
@@ -181,12 +202,10 @@
               <div id="loading-progress-fill"></div>
 
               <!-- КАРТИНКА С ТЕКСТОМ "ЗАГРУЗКА..." -->
-              <img id="loading-text-img" src="TemplateData/loading_text.png" alt="ЗАГРУЗКА...">
-
+              <img id="loading-text-img" src="TemplateData/loading_text.png" alt="ЗАГРУЗКА..." />
             </div>
           </div>
         </div>
-
       </div>
 
       <div id="unity-warning"></div>
@@ -206,7 +225,17 @@
         document.documentElement.style.setProperty("--ui-scale", scale);
       }
 
-      function resizeDesktopCanvas() {
+      function isMobileLike() {
+        const ua = navigator.userAgent || "";
+        const uaMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobi/i.test(ua);
+        const coarse = window.matchMedia && window.matchMedia("(pointer:coarse)").matches;
+        // coarse pointer + relatively small screen catches a lot of mobile webviews reliably
+        const small = Math.min(window.innerWidth, window.innerHeight) <= 900;
+        return uaMobile || (coarse && small);
+      }
+
+      // === Desktop behavior: keep EXACTLY your current 9:16 contain + centered ===
+      function resizeDesktopCanvas916Contain() {
         const ratio = 9 / 16;
         const ww = window.innerWidth;
         const wh = window.innerHeight;
@@ -225,6 +254,23 @@
         updateLoadingUiScale();
       }
 
+      // === Mobile behavior: FULLSCREEN stretch to viewport ===
+      function resizeMobileCanvasFullscreen() {
+        const vv = window.visualViewport;
+        const ww = Math.floor(vv ? vv.width : window.innerWidth);
+        const wh = Math.floor(vv ? vv.height : window.innerHeight);
+
+        canvas.style.width = ww + "px";
+        canvas.style.height = wh + "px";
+
+        updateLoadingUiScale();
+      }
+
+      function resizeCanvasResponsive() {
+        if (isMobileLike()) resizeMobileCanvasFullscreen();
+        else resizeDesktopCanvas916Contain();
+      }
+
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/10.loader.js";
 
@@ -235,24 +281,26 @@
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "CoffeeGame",
-        productVersion: "1.0"
+        productVersion: "1.0",
       };
 
-      resizeDesktopCanvas();
-      window.addEventListener("resize", resizeDesktopCanvas);
+      // IMPORTANT: run resize before Unity boots
+      resizeCanvasResponsive();
+
+      window.addEventListener("resize", resizeCanvasResponsive);
+      if (window.visualViewport) window.visualViewport.addEventListener("resize", resizeCanvasResponsive);
 
       var script = document.createElement("script");
       script.src = loaderUrl;
 
       script.onload = () => {
-        createUnityInstance(canvas, config, progress => {
-          document.getElementById("loading-progress-fill").style.width =
-            (progress * 100) + "%";
+        createUnityInstance(canvas, config, (progress) => {
+          document.getElementById("loading-progress-fill").style.width = progress * 100 + "%";
         })
-        .then(() => {
-          document.getElementById("unity-loading-bar").style.display = "none";
-        })
-        .catch(msg => alert(msg));
+          .then(() => {
+            document.getElementById("unity-loading-bar").style.display = "none";
+          })
+          .catch((msg) => alert(msg));
       };
 
       document.body.appendChild(script);
